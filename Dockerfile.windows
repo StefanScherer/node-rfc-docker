@@ -1,0 +1,26 @@
+# escape=`
+FROM stefanscherer/node-windows:8-windowsservercore
+
+# last directory must be "nwrfcsdk"
+ENV SAPNWRFC_HOME C:\where\you\want\the\nwrfcsdk
+
+WORKDIR $SAPNWRFC_HOME
+# download files manually on host, docker build copies them into image
+COPY download/ .
+
+# extract SAR archive, run ldconfig
+RUN cd .. ; `
+    .\nwrfcsdk\SAPCAR_617-80000938.EXE -xvf ./nwrfcsdk/NWRFC_38-20004568.SAR ; `
+    Remove-Item nwrfcsdk/NWRFC_38-20004568.SAR ; `
+    Remove-Item nwrfcsdk/SAPCAR_617-80000938.EXE ; `
+    $env:PATH = '{0};{1}\lib' -f $env:PATH, $env:SAPNWRFC_HOME ; `
+    [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine)
+
+WORKDIR /code
+COPY package.json /code/package.json
+
+RUN npm install --production
+
+COPY app.js /code/app.js
+
+CMD ["node", "app.js"]
