@@ -21,11 +21,7 @@ COPY package.json /code/package.json
 # enforce compilation of node-rfc with the current compiler and glibc
 # available in the node base image.
 # Deny the access to github.com to block download of the prebuilt node binding.
-RUN cp /etc/hosts /etc/hosts.bak && \
-    echo "127.0.0.1 github.com" >>/etc/hosts && \
-    npm install --production && \
-    cp -f /etc/hosts.bak /etc/hosts && \
-    rm -f /etc/hosts.bak
+RUN npm install --build-from-source --production
 
 COPY app.js /code/app.js
 
